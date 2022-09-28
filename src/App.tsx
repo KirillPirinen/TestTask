@@ -1,26 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { DropDown, Wrapper, Highcharts } from './components'
+import { fetchData, getError, getParsedData, isLoading } from './redux/slices/productsSlice'
+import { useAppDispatch } from './redux/store'
+import { withController } from './utils/withController'
 
-function App() {
+const EnchancedHighcharts = withController(Highcharts)
+
+const App = (): JSX.Element => {
+  const dispatch = useAppDispatch()
+  const [cat, setCat] = useState<string>('')
+  const loading = useSelector(isLoading)
+  const error = useSelector(getError)
+  const { parsedProducts, categories } = useSelector(getParsedData)
+
+  useEffect(() => {
+    dispatch(fetchData())
+  }, [dispatch])
+
+  const handleChange = useCallback((choosed: string) => {
+    setCat(choosed)
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <Wrapper>
+      <DropDown 
+        categories={categories} 
+        onChange={handleChange}
+        choosed={cat}
+      />
+      <EnchancedHighcharts 
+        data={parsedProducts}
+        error={error}
+        loading={loading}
+        choosed={cat}
+      />
+    </Wrapper>
+  )
 }
 
-export default App;
+export default App
